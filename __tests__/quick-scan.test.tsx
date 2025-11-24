@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 
-import { QuickScan } from '@/audit/components/quick-scan'
+import { QuickScan } from '@/app/audit/components/quick-scan'
 import { runQuickScan } from '@/lib/api'
 
 vi.mock('@/lib/api', () => ({
