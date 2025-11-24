@@ -9,7 +9,7 @@ Production-ready Next.js frontend for the Vysalytica platform. The app connects 
 
 ## Environment
 
-Create a `.env.local` file with the backend base URL:
+Create a `.env.local` file with the backend base URL (see `.env.example` for defaults):
 
 ```
 NEXT_PUBLIC_API_URL=https://vs-6lye.onrender.com
@@ -33,6 +33,8 @@ PORT=3000 npm start
 ```
 
 `npm start` uses `next start -p $PORT`, so set `PORT` as needed in your hosting environment.
+
+Vercel deployments use the included `vercel.json` to run `npm run build` and serve the default `.next` output directory without any custom paths.
 
 ## Tests and linting
 
