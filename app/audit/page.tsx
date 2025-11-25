@@ -1,6 +1,7 @@
 
 import { AuditForm } from './components/audit-form'
 import { AuditHistory } from './components/audit-history'
+import { QuickScan } from './components/quick-scan'
 import { FileSearch, TrendingUp, Shield, Zap } from 'lucide-react'
 
 export default function AuditPage() {
@@ -52,13 +53,11 @@ export default function AuditPage() {
 
       {/* Main Content */}
       <div className="grid lg:grid-cols-2 gap-8">
-        <div>
-          <AuditForm />
-        </div>
-        <div>
-          <AuditHistory />
-        </div>
+        <QuickScan />
+        <AuditForm />
       </div>
+
+      <AuditHistory />
     </div>
   )
 }
