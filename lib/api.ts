@@ -81,23 +81,23 @@ class ApiClient {
   }
 
   async submitAudit(domain: string): Promise<{ job_id: string }> {
-    return this.request('/api/audit', {
+    return this.request('/audit', {
       method: 'POST',
       body: JSON.stringify({ domain }),
     })
   }
 
   async getJobStatus(jobId: string): Promise<AuditJob> {
-    return this.request(`/api/audit/status/${jobId}`)
+    return this.request(`/audit/status/${jobId}`)
   }
 
   async downloadReport(jobId: string): Promise<Blob> {
-    return this.request(`/api/audit/${jobId}?format=docx`, { expectBlob: true })
+    return this.request(`/audit/${jobId}?format=docx`, { expectBlob: true })
   }
 
   async getAuditHistory(): Promise<AuditJob[]> {
     try {
-      const history = await this.request<AuditJob[]>('/api/audit/history')
+      const history = await this.request<AuditJob[]>('/audit/history')
       return Array.isArray(history) ? history : []
     } catch (error) {
       console.error('Failed to fetch audit history:', error)
@@ -111,7 +111,7 @@ class ApiClient {
 
     while (attempts < maxAttempts) {
       try {
-        const response = await this.request<unknown>('/api/quickscan', {
+        const response = await this.request<unknown>('/quickscan', {
           method: 'POST',
           body: JSON.stringify({ url: targetUrl }),
         })
