@@ -1,4 +1,6 @@
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://vs-6lye.onrender.com').replace(/\/$/, '')
+// Requests go through our Next.js proxy layer to avoid CORS issues while the proxy
+// itself forwards to the upstream API using NEXT_PUBLIC_API_URL.
+const API_BASE_URL = '/api/backend'
 
 export interface AuditJob {
   id: string
