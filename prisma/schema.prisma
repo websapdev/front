@@ -1,84 +1,196 @@
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
-    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
-    output = "/home/ubuntu/vysalytica_frontend/nextjs_space/node_modules/.prisma/client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider = "sqlite"
+  url      = "file:./visibility.db"
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  password      String
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  audits        Audit[]
+  id        String   @id @default(cuid())
+  email     String   @unique
+  brands    Brand[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+model Brand {
+  id              String               @id @default(cuid())
+  userId          String
+  user            User                 @relation(fields: [userId], references: [id])
+  name            String
+  primaryDomain   String
+  competitors     Competitor[]
+  prompts         TrackedPrompt[]
+  answers         AiAnswer[]
+  snapshots       VisibilitySnapshot[]
+  answerPrompts   AnswerPrompt[]
+  answerPages     AnswerPage[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 }
 
-model Audit {
+model Competitor {
+  id            String   @id @default(cuid())
+  brandId       String
+  brand         Brand    @relation(fields: [brandId], references: [id])
+  name          String
+  primaryDomain String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AiEngine {
+  id          String   @id @default(cuid())
+  slug        String   @unique // e.g., "chatgpt", "perplexity"
+  displayName String
+  answers     AiAnswer[]
+  snapshots   VisibilitySnapshot[]
+}
+
+model TrackedPrompt {
+  id        String     @id @default(cuid())
+  brandId   String
+  brand     Brand      @relation(fields: [brandId], references: [id])
+  text      String
+  isActive  Boolean    @default(true)
+  answers   AiAnswer[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model AiAnswer {
+  id              String        @id @default(cuid())
+  brandId         String
+  brand           Brand         @relation(fields: [brandId], references: [id])
+  trackedPromptId String
+  trackedPrompt   TrackedPrompt @relation(fields: [trackedPromptId], references: [id])
+  aiEngineId      String
+  aiEngine        AiEngine      @relation(fields: [aiEngineId], references: [id])
+  rawAnswer       String        // Storing as text for SQLite compatibility
+  askedAt         DateTime      @default(now())
+  mentions        Mention[]
+}
+
+model Mention {
+  id               String   @id @default(cuid())
+  aiAnswerId       String
+  aiAnswer         AiAnswer @relation(fields: [aiAnswerId], references: [id])
+  entityType       String   // ENUM("BRAND", "COMPETITOR") - SQLite doesn't support enums
+  entityName       String
+  isRecommendation Boolean  @default(false)
+  sentiment        String   // ENUM("POSITIVE", "NEUTRAL", "NEGATIVE")
+}
+
+model VisibilitySnapshot {
+  id                     String   @id @default(cuid())
+  brandId                String
+  brand                  Brand    @relation(fields: [brandId], references: [id])
+  aiEngineId             String
+  aiEngine               AiEngine @relation(fields: [aiEngineId], references: [id])
+  date                   DateTime
+  totalAnswers           Int
+  brandMentionCount      Int
+  competitorMentionCount Int
+  brandShareOfVoice      Float
+  competitorShareOfVoice String   // JSON string for SQLite
+  createdAt              DateTime @default(now())
+
+  @@unique([brandId, aiEngineId, date])
+}
+
+// ============================================
+// AI Answer Hub & FAQ Generator Models
+// ============================================
+
+model AnswerPrompt {
   id          String      @id @default(cuid())
-  domain      String
-  status      AuditStatus @default(PENDING)
-  progress    Int         @default(0)
-  message     String?
-  results     Json?
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brandId     String
+  brand       Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  question    String
+  slug        String
+  status      String      @default("DRAFT") // "DRAFT" | "GENERATED" | "PUBLISHED" | "ARCHIVED"
+  intent      String      @default("UNKNOWN") // "INFORMATIONAL" | "COMMERCIAL" | "NAVIGATIONAL" | "TRANSACTIONAL" | "UNKNOWN"
+  priority    Int         @default(0)
+  answerPage  AnswerPage?
   createdAt   DateTime    @default(now())
-  completedAt DateTime?
   updatedAt   DateTime    @updatedAt
+
+  @@unique([brandId, slug])
+  @@index([brandId, status])
 }
 
-enum AuditStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
+model AnswerPage {
+  id                String              @id @default(cuid())
+  brandId           String
+  brand             Brand               @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  answerPromptId    String              @unique
+  answerPrompt      AnswerPrompt        @relation(fields: [answerPromptId], references: [id], onDelete: Cascade)
+  title             String
+  slug              String
+  urlPath           String
+  metaDescription   String?
+  headlineSnippet   String
+  isPublished       Boolean             @default(false)
+  publishedAt       DateTime?
+  lastGeneratedAt   DateTime?
+  lastEditedAt      DateTime?
+  sections          AnswerSection[]
+  faqItems          AnswerFaqItem[]
+  schemaBlocks      AnswerSchemaBlock[]
+  metrics           AnswerPageMetricDaily[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@unique([brandId, slug])
+  @@index([brandId, isPublished])
 }
+
+model AnswerSection {
+  id           String     @id @default(cuid())
+  answerPageId String
+  answerPage   AnswerPage @relation(fields: [answerPageId], references: [id], onDelete: Cascade)
+  order        Int
+  heading      String
+  body         String     // Markdown/plaintext
+  type         String     // "INTRO" | "FAQ" | "STEP_BY_STEP" | "COMPARISON" | "SUMMARY" | "OTHER"
+
+  @@index([answerPageId, order])
+}
+
+model AnswerFaqItem {
+  id           String     @id @default(cuid())
+  answerPageId String
+  answerPage   AnswerPage @relation(fields: [answerPageId], references: [id], onDelete: Cascade)
+  question     String
+  answer       String     // Markdown/plaintext
+
+  @@index([answerPageId])
+}
+
+model AnswerSchemaBlock {
+  id           String     @id @default(cuid())
+  answerPageId String
+  answerPage   AnswerPage @relation(fields: [answerPageId], references: [id], onDelete: Cascade)
+  schemaType   String     // e.g., "FAQPage", "WebPage", "Product"
+  language     String     @default("json-ld")
+  code         String     // JSON-LD string (TEXT)
+  generatedAt  DateTime   @default(now())
+
+  @@index([answerPageId])
+}
+
+model AnswerPageMetricDaily {
+  id           String     @id @default(cuid())
+  answerPageId String
+  answerPage   AnswerPage @relation(fields: [answerPageId], references: [id], onDelete: Cascade)
+  date         DateTime
+  pageViews    Int        @default(0)
+  ctaClicks    Int        @default(0)
+  aiTargeted   Boolean    @default(false)
+
+  @@unique([answerPageId, date])
+  @@index([answerPageId, date])
+}
+

@@ -1,4 +1,4 @@
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://vs-6lye.onrender.com').replace(/\/$/, '')
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 const DEFAULT_TIMEOUT = 15000
 
 export interface AuditJob {
@@ -36,6 +36,28 @@ class ApiClient {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
+  }
+
+  private async getToken(): Promise<string> {
+    // Try to get token from localStorage (client-side)
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token')
+      if (token) return token
+    }
+
+    // Try to get from NextAuth session (server-side or client-side)
+    try {
+      const { getSession } = await import('next-auth/react')
+      const session = await getSession()
+      // Use type assertion since we extend the Session type in auth-options.ts
+      if (session && (session as any).accessToken) {
+        return (session as any).accessToken as string
+      }
+    } catch (err) {
+      // NextAuth not available or session not found
+    }
+
+    throw new Error('No authentication token available')
   }
 
   private async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -147,6 +169,83 @@ class ApiClient {
       issues: Array.isArray(issues) ? issues : [],
       raw: response,
     }
+  }
+
+  // Authentication methods
+  async signup(email: string, password: string, name?: string): Promise<{ user: any; token: string }> {
+    const response = await this.request<{ success: boolean; data: { user: any; token: string } }>('/api/v1/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
+    })
+    return response.data
+  }
+
+  async login(email: string, password: string): Promise<{ user: any; token: string }> {
+    const response = await this.request<{ success: boolean; data: { user: any; token: string } }>('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+    return response.data
+  }
+
+  async getCurrentUser(token: string): Promise<any> {
+    const response = await this.request<{ success: boolean; data: any }>('/api/v1/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    return response.data
+  }
+
+  // Brand methods
+  async getBrands(token: string): Promise<any[]> {
+    const response = await this.request<{ success: boolean; data: any[] }>('/api/v1/brands', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    return response.data
+  }
+
+  async createBrand(token: string, data: { name: string; primary_url: string; catalog_url?: string; competitors?: string[] }): Promise<any> {
+    const response = await this.request<{ success: boolean; data: any }>('/api/v1/brands', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(data),
+    })
+    return response.data
+  }
+
+  async getBrand(token: string, brandId: number): Promise<any> {
+    const response = await this.request<{ success: boolean; data: any }>(`/api/v1/brands/${brandId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    return response.data
+  }
+
+  async getBrandAudits(token: string, brandId: number): Promise<any[]> {
+    const response = await this.request<{ success: boolean; data: any[] }>(`/api/v1/brands/${brandId}/audits`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    return response.data
+  }
+
+  // Plans methods
+  async getPlans(): Promise<any[]> {
+    const response = await this.request<{ success: boolean; data: any[] }>('/api/plans')
+    return response.data
+  }
+
+  async comparePlans(): Promise<any[]> {
+    const response = await this.request<{ success: boolean; data: any[] }>('/api/plans/compare')
+    return response.data
+  }
+
+  // Payment methods
+  async createCheckoutSession(amount: number): Promise<{ url: string; session_id: string }> {
+    const token = await this.getToken()
+    const response = await this.request<{ success: boolean; data: { url: string; session_id: string } }>('/api/v1/payments/create-checkout-session', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ amount }),
+    })
+    return response.data
   }
 }
 

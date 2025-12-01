@@ -1,7 +1,6 @@
-
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import bcrypt from "bcryptjs"
+import { apiClient } from "./api"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,16 +15,24 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Simple mock auth for demo purposes
-        if (credentials.email === "john@doe.com" && credentials.password === "johndoe123") {
-          return {
-            id: "1",
-            email: "john@doe.com",
-            name: "John Doe",
-          }
-        }
+        try {
+          // Authenticate against backend API
+          const { user, token } = await apiClient.login(credentials.email, credentials.password)
 
-        return null
+          if (user && token) {
+            return {
+              id: user.id.toString(),
+              email: user.email,
+              name: user.name,
+              accessToken: token,
+            }
+          }
+
+          return null
+        } catch (error) {
+          console.error("Authentication error:", error)
+          return null
+        }
       }
     })
   ],
@@ -33,18 +40,20 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt"
   },
   pages: {
-    signIn: "/auth/signin"
+    signIn: "/login"
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.accessToken = (user as any).accessToken
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id as string
+        (session as any).accessToken = token.accessToken
       }
       return session
     }
