@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 async function main() {
   // Create test user with admin privileges
   const hashedPassword = await bcrypt.hash('johndoe123', 12)
-  
+
   const user = await prisma.user.upsert({
     where: { email: 'john@doe.com' },
     update: {},
@@ -54,6 +54,7 @@ async function main() {
     await prisma.audit.create({
       data: {
         ...auditData,
+        results: JSON.stringify(auditData.results),
         userId: user.id,
       },
     })

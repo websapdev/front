@@ -3,6 +3,7 @@
 
 import { prisma } from '../aiVisibility';
 import { generateAnswerContent, slugifyQuestion, type AnswerIntent } from './generator';
+import { AnswerPage } from '@prisma/client';
 
 export type { AnswerIntent };
 
@@ -90,7 +91,7 @@ export async function generateOrRegenerateAnswerPageForPrompt(args: {
         where: { answerPromptId: promptId }
     });
 
-    let answerPage;
+    let answerPage: AnswerPage;
 
     if (existingPage) {
         // Delete existing sections, FAQ items, and schema blocks
