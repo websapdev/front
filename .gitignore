@@ -31,3 +31,16 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# database
+*.db
+*.db-journal
+
+# archives
+*.zip
+*.tar.gz
+*.rar
