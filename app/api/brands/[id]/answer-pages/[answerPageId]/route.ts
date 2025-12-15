@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/aiVisibility';
 import { updateAnswerPage } from '@/lib/answerHub/service';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     request: Request,
     { params }: { params: { id: string; answerPageId: string } }

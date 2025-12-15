@@ -1,0 +1,70 @@
+
+> build
+> next build
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+  ▲ Next.js 14.2.28
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/19) ...
+   Generating static pages (4/19) 
+   Generating static pages (9/19) 
+   Generating static pages (14/19) 
+ ✓ Generating static pages (19/19)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                 Size     First Load JS
+┌ ƒ /                                                       1.47 kB        97.6 kB
+├ ƒ /_not-found                                             143 B          87.6 kB
+├ ƒ /ai-answers/[slug]                                      143 B          87.6 kB
+├ ƒ /api/auth/[...nextauth]                                 0 B                0 B
+├ ƒ /api/brands/[id]/answer-pages                           0 B                0 B
+├ ƒ /api/brands/[id]/answer-pages/[answerPageId]            0 B                0 B
+├ ƒ /api/brands/[id]/answer-pages/[answerPageId]/publish    0 B                0 B
+├ ƒ /api/brands/[id]/answer-pages/[answerPageId]/unpublish  0 B                0 B
+├ ƒ /api/brands/[id]/answer-pages/generate                  0 B                0 B
+├ ƒ /api/brands/[id]/answer-prompts                         0 B                0 B
+├ ƒ /api/brands/[id]/competitors                            0 B                0 B
+├ ƒ /api/brands/[id]/prompts                                0 B                0 B
+├ ƒ /api/brands/[id]/visibility/overview                    0 B                0 B
+├ ƒ /api/internal/visibility/run                            0 B                0 B
+├ ƒ /audit                                                  10.4 kB         109 kB
+├ ƒ /audits                                                 2.78 kB        98.9 kB
+├ ƒ /auth/signin                                            4.73 kB         117 kB
+├ ƒ /auth/signup                                            5.06 kB         117 kB
+├ ƒ /brands/[id]                                            2.66 kB        98.8 kB
+├ ƒ /brands/[id]/answer-graph                               2.43 kB         102 kB
+├ ƒ /brands/[id]/answer-hub                                 3.22 kB        99.4 kB
+├ ƒ /brands/[id]/audits/[auditId]                           3.45 kB        99.6 kB
+├ ƒ /brands/[id]/citations                                  3.23 kB        99.4 kB
+├ ƒ /brands/[id]/playbooks                                  2.79 kB         102 kB
+├ ƒ /brands/[id]/visibility                                 4.94 kB         200 kB
+├ ƒ /checkout/cancel                                        604 B          96.8 kB
+├ ƒ /checkout/success                                       699 B          96.9 kB
+├ ƒ /citations                                              5.77 kB         104 kB
+├ ƒ /dashboard                                              2.6 kB         98.7 kB
+├ ƒ /graph                                                  9.44 kB         203 kB
+├ ƒ /login                                                  2.26 kB        98.4 kB
+├ ƒ /playbooks                                              15.3 kB         110 kB
+├ ƒ /pricing                                                4.19 kB         101 kB
+├ ƒ /reports                                                5.93 kB         107 kB
+├ ƒ /settings                                               3.47 kB        99.6 kB
+└ ƒ /signup                                                 2.37 kB        98.5 kB
++ First Load JS shared by all                               87.4 kB
+  ├ chunks/117-9eee3fc27f2941b7.js                          31.8 kB
+  ├ chunks/fd9d1056-898dbe322567f69b.js                     53.6 kB
+  └ other shared chunks (total)                             2.04 kB
+
+
+ƒ  (Dynamic)  server-rendered on demand
+
