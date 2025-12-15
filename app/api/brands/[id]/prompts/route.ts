@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/aiVisibility';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(
     request: Request,
     { params }: { params: { id: string } }
